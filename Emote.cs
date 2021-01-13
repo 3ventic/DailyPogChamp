@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace DailyPogChamp
 {
     public class Emote
     {
         public string Id { get; init; } = string.Empty;
-        public int FirstIndex { get; init; }
+        public IEnumerable<int> StartIndices { get; init; } = new List<int>();
     }
 }

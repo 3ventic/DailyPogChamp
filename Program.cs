@@ -1,11 +1,13 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using DailyPogChamp;
 using EvtSource;
 using Newtonsoft.Json;
 
 const string savePath = "/tmp/pogchamp";
+var l = new object();
 
 var lastPogChamp = await File.ReadAllTextAsync(savePath);
 
@@ -31,21 +33,28 @@ evt.MessageReceived += async (_, args) =>
     if (pogChampIndex <= -1 || !msg.Tags.ContainsKey("emotes")) return;
     try
     {
-        var emotes = msg.Tags["emotes"].Split(',').Select(e =>
+        var emotes = msg.Tags["emotes"].Split('/', StringSplitOptions.RemoveEmptyEntries).Select(e =>
         {
             var parts = e.Split(':');
-            var indices = parts[1].Split('-');
+            if (parts.Length != 2) return null;
             return new Emote
             {
                 Id = parts[0],
-                FirstIndex = int.Parse(indices[0]),
+                StartIndices = parts[1].Split(',').Select(s => int.Parse(s.Split('-')[0]))
             };
         });
-        var pogchamp = emotes.First(e => e.FirstIndex == pogChampIndex);
-        if (pogchamp.Id == lastPogChamp) return;
-        lastPogChamp = pogchamp.Id;
-        await File.WriteAllTextAsync(savePath, lastPogChamp);
-        await new DiscordWebHookMessage(lastPogChamp).Execute();
+        var pogchamp = emotes.FirstOrDefault(e => e != null && e.StartIndices.Contains(pogChampIndex));
+        lock (l)
+        {
+            if (pogchamp == default || pogchamp.Id == lastPogChamp) return;
+            lastPogChamp = pogchamp.Id;
+            File.WriteAllText(savePath, lastPogChamp);
+            Console.WriteLine($"new pogchamp {lastPogChamp}");
+        }
+
+        var message = new DiscordWebHookMessage(lastPogChamp);
+        using var response = await message.ExecuteAsync();
+        response.EnsureSuccessStatusCode();
     }
     catch (Exception ex)
     {
@@ -54,3 +63,6 @@ evt.MessageReceived += async (_, args) =>
 };
 
 evt.Start();
+Console.WriteLine("started");
+
+await Task.Delay(-1);
