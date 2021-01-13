@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 const string savePath = "/tmp/pogchamp";
 var l = new object();
 
-var lastPogChamp = await File.ReadAllTextAsync(savePath);
+var lastPogChamp = long.Parse((await File.ReadAllTextAsync(savePath)).Trim('\r', '\n', ' '));
 
 var url = Environment.GetEnvironmentVariable("URL");
 
@@ -39,16 +39,16 @@ evt.MessageReceived += async (_, args) =>
             if (parts.Length != 2) return null;
             return new Emote
             {
-                Id = parts[0],
+                Id = long.Parse(parts[0]),
                 StartIndices = parts[1].Split(',').Select(s => int.Parse(s.Split('-')[0]))
             };
         });
         var pogchamp = emotes.FirstOrDefault(e => e != null && e.StartIndices.Contains(pogChampIndex));
         lock (l)
         {
-            if (pogchamp == default || pogchamp.Id == lastPogChamp) return;
+            if (pogchamp == default || pogchamp.Id <= lastPogChamp) return;
             lastPogChamp = pogchamp.Id;
-            File.WriteAllText(savePath, lastPogChamp);
+            File.WriteAllText(savePath, lastPogChamp.ToString());
             Console.WriteLine($"new pogchamp {lastPogChamp}");
         }
 

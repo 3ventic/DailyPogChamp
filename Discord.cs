@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -23,10 +21,10 @@ namespace DailyPogChamp
 
         private static readonly HttpClient Http = new(HttpHandler, false) { Timeout = TimeSpan.FromSeconds(10) };
 
-        private readonly string _pogchamp;
+        private readonly long _pogchamp;
         private string Payload => "{\"content\":\"https://static-cdn.jtvnw.net/emoticons/v2/" + _pogchamp + "/default/dark/3.0\"}";
 
-        public DiscordWebHookMessage(string pogchamp)
+        public DiscordWebHookMessage(long pogchamp)
         {
             _pogchamp = pogchamp;
         }

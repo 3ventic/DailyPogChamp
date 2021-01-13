@@ -4,7 +4,7 @@ namespace DailyPogChamp
 {
     public class Emote
     {
-        public string Id { get; init; } = string.Empty;
+        public long Id { get; init; }
         public IEnumerable<int> StartIndices { get; init; } = new List<int>();
     }
 }
