@@ -54,7 +54,7 @@ evt.MessageReceived += async (_, args) =>
 
         var message = new DiscordWebHookMessage(lastPogChamp);
         using var response = await message.ExecuteAsync();
-        response.EnsureSuccessStatusCode();
+        response?.EnsureSuccessStatusCode();
     }
     catch (Exception ex)
     {
