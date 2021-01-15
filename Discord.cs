@@ -41,9 +41,8 @@ namespace DailyPogChamp
             catch (Exception ex)
             {
                 Console.WriteLine($"error with hook: {ex}");
+                throw;
             }
-
-            return null;
         }
     }
 }
