@@ -30,6 +30,7 @@ evt.MessageReceived += async (_, args) =>
 {
     var msg = JsonConvert.DeserializeObject<Privmsg>(args.Message);
     var pogChampIndex = msg.Message.IndexOf("PogChamp", StringComparison.Ordinal);
+    var previousPogChamp = lastPogChamp;
     if (pogChampIndex <= -1 || !msg.Tags.ContainsKey("emotes")) return;
     try
     {
@@ -48,16 +49,20 @@ evt.MessageReceived += async (_, args) =>
         {
             if (pogchamp == default || pogchamp.Id <= lastPogChamp) return;
             lastPogChamp = pogchamp.Id;
-            File.WriteAllText(savePath, lastPogChamp.ToString());
             Console.WriteLine($"new pogchamp {lastPogChamp}");
         }
 
         var message = new DiscordWebHookMessage(lastPogChamp);
         using var response = await message.ExecuteAsync();
         response?.EnsureSuccessStatusCode();
+        lock (l)
+        {
+            File.WriteAllText(savePath, lastPogChamp.ToString());
+        }
     }
     catch (Exception ex)
     {
+        lastPogChamp = previousPogChamp;
         Console.WriteLine($"error parsing emotes: {ex}");
     }
 };
